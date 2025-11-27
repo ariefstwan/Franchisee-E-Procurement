@@ -58,7 +58,7 @@
     <!-- Top bar -->
     <header class="rp-topbar">
       <div class="rp-topbar-left">
-        <div class="rp-property-name">Sans Hotel Nagari Malioboro</div>
+        <div class="rp-property-name">RedDoorz Plus @ Dago Pojok 3</div>
         <div class="rp-property-rating">
           Your Property Rating:
           <span class="rp-property-rating-score">5.0 / 5</span>
@@ -132,6 +132,16 @@
               </div>
             </div>
 
+            <div class="rp-helper-banner">
+              <i class="far fa-lightbulb rp-helper-icon"></i>
+              <div class="rp-helper-text">
+                <div class="rp-helper-title">Enjoy exclusive vendor picks for RedDoorz Partners</div>
+                <div class="rp-helper-body">
+                  Check out products from our official vendor. You can send a direct WhatsApp or Email request from RedPartners to enjoy special pricing.
+                </div>
+              </div>
+            </div>
+
             <div class="rp-filters">
               <div class="rp-filter-group">
                 <label class="rp-filter-label" for="filter-category">Category</label>
@@ -141,6 +151,22 @@
                   <option value="Laundry">Laundry</option>
                   <option value="AC/Handyman">AC/Handyman</option>
                   <option value="Wifi">Wifi</option>
+                </select>
+              </div>
+
+              <div class="rp-filter-group">
+                <label class="rp-filter-label" for="filter-city">City</label>
+                <select id="filter-city" class="rp-input rp-input--sm">
+                  <option value="all">All Cities</option>
+                </select>
+              </div>
+
+              <div class="rp-filter-group">
+                <label class="rp-filter-label" for="filter-sort">Sort</label>
+                <select id="filter-sort" class="rp-input rp-input--sm">
+                  <option value="none">Sort by</option>
+                  <option value="price-asc">Price: Low to High</option>
+                  <option value="minorder-asc">Min Order: Low to High</option>
                 </select>
               </div>
 
@@ -183,16 +209,6 @@
               </table>
               <div class="rp-table-empty" id="marketplace-empty" hidden>
                 No product matches your filter. Try adjusting category or keywords.
-              </div>
-            </div>
-
-            <div class="rp-helper-banner">
-              <i class="far fa-lightbulb rp-helper-icon"></i>
-              <div class="rp-helper-text">
-                <div class="rp-helper-title">Connected directly to vendor partners</div>
-                <div class="rp-helper-body">
-                  This module bridges your property with vetted vendor partners via WhatsApp or Email, with RedPartners as the initial referral channel.
-                </div>
               </div>
             </div>
           </section>
