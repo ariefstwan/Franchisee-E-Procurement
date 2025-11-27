@@ -296,6 +296,14 @@ function formatDateTime(d) {
   return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
 }
 
+function parsePriceMin(priceStr) {
+  if (!priceStr) return Infinity;
+  const match = priceStr.match(/([\d.]+)/);
+  if (!match) return Infinity;
+  const num = parseInt(match[1].replace(/\./g, ""), 10);
+  return Number.isFinite(num) ? num : Infinity;
+}
+
 function openPreviewModal(src) {
   const modal = document.getElementById("preview-modal");
   const img = document.getElementById("preview-image");
@@ -341,7 +349,9 @@ function renderProductTable(products) {
             class="rp-thumb js-preview"
             data-preview="${p.previewImage}"
           />
-          <div class="rp-thumb-hint">Click to enlarge</div>
+          <div class="rp-thumb-hint" title="Preview full size">
+            <i class="fas fa-search-plus"></i>
+          </div>
         </div>
       </td>
       <td>
@@ -549,12 +559,15 @@ function renderOrders() {
 
 function applyFilters() {
   const category = document.getElementById("filter-category").value;
+  const city = document.getElementById("filter-city").value;
+  const sort = document.getElementById("filter-sort").value;
   const q = document.getElementById("filter-search").value
     .trim()
     .toLowerCase();
 
   const filtered = PRODUCTS.filter((p) => {
     const matchCategory = category === "all" || p.category === category;
+    const matchCity = city === "all" || (p.vendorCity || "").toLowerCase() === city;
     const text = (
       p.name +
       " " +
@@ -569,10 +582,42 @@ function applyFilters() {
       (p.vendorCity || "")
     ).toLowerCase();
     const matchSearch = !q || text.includes(q);
-    return matchCategory && matchSearch;
+    return matchCategory && matchCity && matchSearch;
   });
 
+  if (sort === "price-asc") {
+    filtered.sort((a, b) => parsePriceMin(a.price) - parsePriceMin(b.price));
+  } else if (sort === "minorder-asc") {
+    filtered.sort((a, b) => (a.minOrder || 0) - (b.minOrder || 0));
+  }
+
   renderProductTable(filtered);
+}
+
+function populateCityFilter() {
+  const select = document.getElementById("filter-city");
+  if (!select) return;
+  const uniqueCities = Array.from(
+    new Set(
+      PRODUCTS.map((p) => (p.vendorCity || "").trim().toLowerCase()).filter(Boolean)
+    )
+  ).sort();
+
+  select.innerHTML = "";
+  const allOpt = document.createElement("option");
+  allOpt.value = "all";
+  allOpt.textContent = "All Cities";
+  select.appendChild(allOpt);
+
+  uniqueCities.forEach((city) => {
+    const opt = document.createElement("option");
+    opt.value = city;
+    opt.textContent = city
+      .split(" ")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+    select.appendChild(opt);
+  });
 }
 
 // --- Cart manipulation -------------------------------------------------------
@@ -707,10 +752,18 @@ function bindEvents() {
     .getElementById("filter-category")
     .addEventListener("change", applyFilters);
   document
+    .getElementById("filter-city")
+    .addEventListener("change", applyFilters);
+  document
+    .getElementById("filter-sort")
+    .addEventListener("change", applyFilters);
+  document
     .getElementById("filter-search")
     .addEventListener("input", applyFilters);
   document.getElementById("filter-clear").addEventListener("click", () => {
     document.getElementById("filter-category").value = "all";
+    document.getElementById("filter-city").value = "all";
+    document.getElementById("filter-sort").value = "none";
     document.getElementById("filter-search").value = "";
     applyFilters();
   });
@@ -884,6 +937,7 @@ function handleSend(channel) {
 
 document.addEventListener("DOMContentLoaded", () => {
   loadState();
+  populateCityFilter();
   renderProductTable(PRODUCTS);
   renderCart();
   renderAddresses();
