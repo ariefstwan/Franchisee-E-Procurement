@@ -5,9 +5,9 @@
   <title>RedPartners - E-Procurement</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Roboto + Icons (can be swapped with whatever you use internally) -->
+  <!-- Comfortable, legible font + Icons -->
   <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+        href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
   <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
 
@@ -19,7 +19,6 @@
   <aside class="rp-sidebar">
     <div class="rp-logo">
       <div class="rp-logo-main">RedPartners</div>
-      <div class="rp-logo-sub">SANS Hotels</div>
     </div>
 
     <nav class="rp-nav">
@@ -59,6 +58,7 @@
     <header class="rp-topbar">
       <div class="rp-topbar-left">
         <div class="rp-property-name">RedDoorz Plus @ Dago Pojok 3</div>
+        <div class="rp-property-location">Bandung, Jawa Barat</div>
         <div class="rp-property-rating">
           Your Property Rating:
           <span class="rp-property-rating-score">5.0 / 5</span>
@@ -79,10 +79,7 @@
       <div class="rp-card rp-card--page">
         <div class="rp-card-header">
           <div>
-            <div class="rp-card-title">E-Procurement Marketplace</div>
-            <div class="rp-card-subtitle">
-              Checkout will generate WhatsApp or Email drafts to contact the vendor partner directly using RedPartners as the reference.
-            </div>
+          <div class="rp-card-title">E-Procurement Catalog</div>
           </div>
           <div class="rp-card-meta">
             <span class="rp-pill rp-pill--muted">
@@ -98,11 +95,11 @@
           <div class="rp-tabs">
             <button class="rp-tab-button rp-tab-button--active"
                     data-tab-target="marketplace">
-              Marketplace
+              Catalog
             </button>
             <button class="rp-tab-button"
                     data-tab-target="checkout">
-              Checkout
+              Cart
             </button>
             <button class="rp-tab-button"
                     data-tab-target="orders">
@@ -114,22 +111,18 @@
             </button>
           </div>
 
-          <!-- Marketplace -->
+          <!-- Catalog -->
           <section id="tab-marketplace"
                    class="rp-tab-section rp-tab-section--active">
 
             <div class="rp-section-header">
               <div>
-                <h3 class="rp-section-title">Marketplace</h3>
-                <p class="rp-section-subtitle">
-                  Compare standard SKUs and estimated price ranges. Add items to cart,
-                  then finalize the request in the Checkout tab.
-                </p>
+                <h3 class="rp-section-title">Catalog</h3>
               </div>
-              <div class="rp-section-meta">
-                <span class="rp-pill rp-pill--light"
+            <div class="rp-section-meta">
+              <span class="rp-pill rp-pill--light"
                       data-product-count-label>0 item(s)</span>
-              </div>
+            </div>
             </div>
 
             <div class="rp-helper-banner">
@@ -188,28 +181,11 @@
               </div>
             </div>
 
-            <div class="rp-table-wrapper">
-              <table class="rp-table" id="marketplace-table">
-                <thead>
-                <tr>
-                  <th style="width: 8%;">Preview</th>
-                  <th style="width: 18%;">Product</th>
-                  <th style="width: 20%;">Specification</th>
-                  <th style="width: 12%;">Price</th>
-                  <th style="width: 8%;">Min. Order</th>
-                  <th style="width: 8%;">Unit</th>
-                  <th style="width: 10%;">Category</th>
-                  <th style="width: 14%;">Vendor</th>
-                  <th style="width: 2%;">Action</th>
-                </tr>
-                </thead>
-                <tbody>
-                <!-- Filled by JS -->
-                </tbody>
-              </table>
-              <div class="rp-table-empty" id="marketplace-empty" hidden>
-                No product matches your filter. Try adjusting category or keywords.
-              </div>
+            <div id="catalog-grid" class="rp-card-grid">
+              <!-- Filled by JS -->
+            </div>
+            <div class="rp-table-empty" id="marketplace-empty" hidden>
+              No product matches your filter. Try adjusting category or keywords.
             </div>
           </section>
 
@@ -217,7 +193,7 @@
           <section id="tab-checkout" class="rp-tab-section">
             <div class="rp-section-header">
               <div>
-                <h3 class="rp-section-title">Checkout</h3>
+                <h3 class="rp-section-title">Cart</h3>
                 <p class="rp-section-subtitle">
                   Generate a WhatsApp or Email draft to send to the vendor partner.
                 </p>
@@ -233,9 +209,10 @@
                     <thead>
                     <tr>
                       <th style="width: 32%;">Product</th>
+                      <th style="width: 18%;">Specification</th>
                       <th style="width: 12%;">Qty</th>
-                      <th style="width: 16%;">Unit</th>
-                      <th style="width: 28%;">Notes</th>
+                      <th style="width: 10%;">Unit</th>
+                      <th style="width: 16%;">Notes</th>
                       <th style="width: 12%;">&nbsp;</th>
                     </tr>
                     </thead>
@@ -244,7 +221,7 @@
                     </tbody>
                   </table>
                   <div class="rp-table-empty" id="checkout-empty" hidden>
-                    Your cart is empty. Go back to the Marketplace tab and add items.
+                    Your cart is empty. Go back to the Catalog tab and add items.
                   </div>
                 </div>
 
@@ -256,6 +233,8 @@
                   <div class="rp-summary-label">Distinct products</div>
                   <div class="rp-summary-value" data-total-lines>0</div>
                 </div>
+
+                <div id="vendor-suggestions" class="rp-suggestions"></div>
               </div>
 
               <!-- Delivery & channels -->
@@ -269,6 +248,9 @@
                   <select id="delivery-address-select" class="rp-input">
                     <!-- Filled by JS -->
                   </select>
+                  <div class="rp-address-preview" data-address-preview>
+                    <!-- Filled by JS -->
+                  </div>
                   <div class="rp-field-helper">
                     Manage delivery addresses in the "Profile &amp; Delivery Address" tab.
                   </div>
@@ -305,12 +287,6 @@
                   </div>
                 </div>
 
-                <div class="rp-info-banner">
-                  <div class="rp-info-banner-title">Not a live PO yet</div>
-                  <div class="rp-info-banner-body">
-                    This MVP sends an order request directly to the vendor partner. Final price, availability, and delivery schedule will be reconfirmed by the vendor.
-                  </div>
-                </div>
               </div>
             </div>
           </section>
@@ -362,106 +338,111 @@
               </div>
             </div>
 
-            <div class="rp-grid rp-grid--2col">
-              <!-- Address list -->
-              <div>
-                <h4 class="rp-block-title">Saved Addresses</h4>
-                <div class="rp-table-wrapper rp-table-wrapper--simple">
-                  <table class="rp-table" id="addresses-table">
-                    <thead>
-                    <tr>
-                      <th style="width: 32%;">Label</th>
-                      <th style="width: 46%;">Address</th>
-                      <th style="width: 22%;">Default</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <!-- Filled by JS -->
-                    </tbody>
-                  </table>
-                  <div class="rp-table-empty" id="addresses-empty" hidden>
-                    No delivery address saved. Use the form on the right
-                    to create at least one.
-                  </div>
-                </div>
+            <div id="addresses-view">
+              <div class="rp-section-header">
+                <h4 class="rp-block-title" style="margin:0;">Saved Addresses</h4>
+                <button class="rp-button rp-button--sm" id="add-address-btn" type="button">
+                  Add Address
+                </button>
               </div>
 
-              <!-- New address form -->
-              <div>
-                <h4 class="rp-block-title">Add New Delivery Address</h4>
-                <form id="address-form" class="rp-form">
-                  <div class="rp-form-group">
-                    <label class="rp-label" for="addr-label">
-                      Address Label
-                    </label>
-                    <input id="addr-label"
-                           type="text"
-                           class="rp-input"
-                           placeholder="Example: Front Office, Warehouse, Owner's House"
-                           required />
-                  </div>
-
-                  <div class="rp-form-group">
-                    <label class="rp-label" for="addr-recipient">
-                      Contact Person
-                    </label>
-                    <input id="addr-recipient"
-                           type="text"
-                           class="rp-input"
-                           placeholder="Recipient name" />
-                  </div>
-
-                  <div class="rp-form-group">
-                    <label class="rp-label" for="addr-phone">
-                      Phone / WhatsApp
-                    </label>
-                    <input id="addr-phone"
-                           type="tel"
-                           class="rp-input"
-                           placeholder="+62..." />
-                  </div>
-
-                  <div class="rp-form-group">
-                    <label class="rp-label" for="addr-city">
-                      City
-                    </label>
-                    <input id="addr-city"
-                           type="text"
-                           class="rp-input"
-                           placeholder="Yogyakarta" />
-                  </div>
-
-                  <div class="rp-form-group">
-                    <label class="rp-label" for="addr-detail">
-                      Full Address
-                    </label>
-                    <textarea id="addr-detail"
-                              rows="4"
-                              class="rp-input rp-textarea"
-                              placeholder="Street name, RT/RW, area, nearby POI, etc."
-                              required></textarea>
-                  </div>
-
-                  <div class="rp-form-group rp-form-group--inline">
-                    <label class="rp-checkbox">
-                      <input type="checkbox" id="addr-default" />
-                      <span>Set as default delivery address</span>
-                    </label>
-                  </div>
-
-                  <div class="rp-form-actions">
-                    <button type="submit"
-                            class="rp-button rp-button--primary">
-                      Save Address
-                    </button>
-                  </div>
-                </form>
-
-                <div class="rp-field-helper rp-field-helper--top-margin">
-                  Addresses are stored in this browser only (local storage) for
-                  prototyping. When connected to backend later, they can be
-                  synced with partner profile.
+              <div class="rp-table-wrapper rp-table-wrapper--simple">
+                <table class="rp-table" id="addresses-table">
+                  <thead>
+                  <tr>
+                    <th style="width: 28%;">Label</th>
+                    <th style="width: 42%;">Address</th>
+                    <th style="width: 18%;">Default</th>
+                    <th style="width: 12%;">Action</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <!-- Filled by JS -->
+                  </tbody>
+                </table>
+                <div class="rp-table-empty" id="addresses-empty" hidden>
+                  No delivery address saved. Use the button above to create at least one.
                 </div>
+              </div>
+            </div>
+
+            <div id="address-form-page" class="rp-form-card" hidden>
+              <div class="rp-section-header">
+                <h4 class="rp-block-title" id="address-form-title" style="margin:0;">Add Delivery Address</h4>
+                <button type="button" class="rp-link-button" id="address-form-cancel">Back</button>
+              </div>
+              <form id="address-form" class="rp-form">
+                <div class="rp-form-group">
+                  <label class="rp-label" for="addr-label">
+                    Address Label
+                  </label>
+                  <input id="addr-label"
+                         type="text"
+                         class="rp-input"
+                         placeholder="Example: Front Office, Warehouse, Owner's House"
+                         required />
+                </div>
+
+                <div class="rp-form-group">
+                  <label class="rp-label" for="addr-recipient">
+                    Contact Person
+                  </label>
+                  <input id="addr-recipient"
+                         type="text"
+                         class="rp-input"
+                         placeholder="Recipient name" />
+                </div>
+
+                <div class="rp-form-group">
+                  <label class="rp-label" for="addr-phone">
+                    Phone / WhatsApp
+                  </label>
+                  <input id="addr-phone"
+                         type="tel"
+                         class="rp-input"
+                         placeholder="+62..." />
+                </div>
+
+                <div class="rp-form-group">
+                  <label class="rp-label" for="addr-city">
+                    City
+                  </label>
+                  <input id="addr-city"
+                         type="text"
+                         class="rp-input"
+                         placeholder="Bandung" />
+                </div>
+
+                <div class="rp-form-group">
+                  <label class="rp-label" for="addr-detail">
+                    Full Address
+                  </label>
+                  <textarea id="addr-detail"
+                            rows="4"
+                            class="rp-input rp-textarea"
+                            placeholder="Street name, RT/RW, area, nearby POI, etc."
+                            required></textarea>
+                </div>
+
+                <div class="rp-form-group rp-form-group--inline">
+                  <label class="rp-checkbox rp-checkbox--box">
+                    <input type="checkbox" id="addr-default" />
+                    <span>Set as main address</span>
+                  </label>
+                </div>
+
+                <div class="rp-form-actions">
+                  <button type="submit"
+                          class="rp-button rp-button--primary">
+                    Save Address
+                  </button>
+                </div>
+              </form>
+
+              <div class="rp-field-helper rp-field-helper--top-margin">
+                Addresses are stored in this browser only (local storage) for
+                prototyping. When connected to backend later, they can be
+                synced with partner profile.
               </div>
             </div>
           </section>
@@ -482,5 +463,6 @@
   </div>
   <div class="rp-modal-hitarea" data-close-modal></div>
 </div>
+
 </body>
 </html>
