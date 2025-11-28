@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>RedPartners - Product Detail</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="rp-main-body">
+    <div class="rp-card rp-card--page rp-pdp-page">
+      <div class="rp-card-header">
+        <div>
+          <div class="rp-card-title" data-pdp-name></div>
+          <div class="rp-pdp__vendor">
+            <span class="rp-icon-text">
+              <i class="fas fa-store rp-icon-inline" aria-hidden="true"></i>
+              <span data-pdp-vendor></span>
+            </span>
+            <span class="rp-icon-text" style="margin-left:8px;">
+              <i class="fas fa-map-marker-alt rp-icon-inline" aria-hidden="true"></i>
+              <span data-pdp-city></span>
+            </span>
+          </div>
+        </div>
+        <a href="index.html#tab-marketplace" class="rp-link-button">Back to Catalog</a>
+      </div>
+      <div class="rp-card-body rp-pdp-body">
+        <div class="rp-pdp-media">
+          <img src="" alt="Product image" data-pdp-image />
+        </div>
+        <div class="rp-pdp-info">
+          <div class="rp-price" data-pdp-price></div>
+          <div class="rp-price-meta" data-pdp-price-meta></div>
+          <div class="rp-pdp-meta">
+            <span class="rp-pill rp-pill--light" data-pdp-category></span>
+            <span class="rp-pill rp-pill--muted" data-pdp-min></span>
+            <span class="rp-pill rp-pill--muted" data-pdp-lead></span>
+            <span class="rp-pill rp-pill--muted" data-pdp-tax></span>
+          </div>
+          <div class="rp-pdp-section">
+            <div class="rp-pdp-section-title">Specification</div>
+            <div class="rp-pdp-text" data-pdp-variant></div>
+            <div class="rp-pdp-text" data-pdp-desc></div>
+          </div>
+          <div class="rp-pdp-section">
+            <div class="rp-pdp-section-title">What's included</div>
+            <div class="rp-pdp-text"><i class="fas fa-check rp-icon-inline"></i> Partner SLA: timely response, clear pricing</div>
+            <div class="rp-pdp-text"><i class="fas fa-check rp-icon-inline"></i> Delivery tracking via vendor confirmation</div>
+            <div class="rp-pdp-text"><i class="fas fa-check rp-icon-inline"></i> Support for RedPartners special pricing</div>
+          </div>
+          <div class="rp-pdp-section">
+            <div class="rp-pdp-section-title">Delivery & Lead Time</div>
+            <div class="rp-pdp-text" data-pdp-fulfillment></div>
+          </div>
+          <div class="rp-pdp-section">
+            <div class="rp-pdp-section-title">Quantity</div>
+            <div class="rp-qty-control">
+              <button type="button" class="rp-qty-btn" data-qty-decrease aria-label="Decrease quantity">-</button>
+              <input id="pdp-qty" type="number" min="1" value="1" class="rp-input rp-input--sm" aria-label="Quantity" />
+              <button type="button" class="rp-qty-btn" data-qty-increase aria-label="Increase quantity">+</button>
+            </div>
+          </div>
+          <div class="rp-pdp-actions">
+            <div class="rp-action-row">
+              <a id="pdp-order" class="rp-button rp-button--primary" href="index.html#tab-marketplace">
+                Order Now
+              </a>
+              <div class="rp-field-helper" id="pdp-order-nudge"></div>
+            </div>
+            <div class="rp-action-row">
+              <button id="pdp-wishlist" class="rp-button rp-button--ghost" type="button" aria-pressed="false">
+                Like
+              </button>
+              <div class="rp-field-helper" id="pdp-wishlist-nudge"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="rp-card-body" style="border-top:1px solid #e6e6e6;">
+        <div class="rp-section-header">
+          <div>
+            <h3 class="rp-section-title" style="margin:0;">Recommended for you</h3>
+            <p class="rp-section-subtitle">Similar items from trusted partners</p>
+          </div>
+        </div>
+        <div id="pdp-reco-grid" class="rp-card-grid"></div>
+        <div id="pdp-reco-empty" class="rp-table-empty" hidden>No recommendations available.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const PRODUCTS = JSON.parse(localStorage.getItem("rp_products_backup") || "[]");
+    const fallback = {
+      id: "WTR-AQUA",
+      name: "Mineral Water Supply",
+      variant: "600ml bottles",
+      vendorName: "Aqua (PT Tirta Investama)",
+      vendorCity: "Jakarta",
+      vendorPhone: "0838-2952-1353",
+      vendorEmail: "",
+      category: "F&B",
+      unit: "carton (24)",
+      price: "IDR 50.000 / carton",
+      priceType: "Fixed",
+      taxIncluded: false,
+      leadTime: "2-3 days",
+      minOrder: 10,
+      previewImage: "https://files.catbox.moe/gjsgjd.jpg",
+      description: "24 x 600ml bottles per carton.",
+      variantText: "600ml bottled water"
+    };
+
+    function getProduct() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("id");
+      if (id && PRODUCTS.length) {
+        const found = PRODUCTS.find((p) => p.id === id);
+        if (found) return found;
+      }
+      return fallback;
+    }
+
+    function renderRecommendations(current) {
+      const grid = document.getElementById("pdp-reco-grid");
+      const empty = document.getElementById("pdp-reco-empty");
+      if (!grid || !empty) return;
+
+      const candidates = (PRODUCTS.length ? PRODUCTS : [fallback])
+        .filter((p) => p.id !== current.id)
+        .sort((a, b) => (a.category === current.category && b.category !== current.category ? -1 : 0))
+        .slice(0, 3);
+
+      grid.innerHTML = "";
+      if (!candidates.length) {
+        empty.hidden = false;
+        return;
+      }
+
+      empty.hidden = true;
+      candidates.forEach((p) => {
+        const card = document.createElement("a");
+        card.href = `pdp.html?id=${encodeURIComponent(p.id)}`;
+        card.className = "rp-product-card";
+        card.innerHTML = `
+          <div class="rp-product-card__media">
+            <div class="rp-thumb-wrapper">
+              <img src="${p.previewImage}" alt="${p.name} preview" class="rp-thumb" />
+            </div>
+            <div class="rp-product-badge">${p.category}</div>
+          </div>
+          <div class="rp-product-card__body">
+            <div class="rp-product-name">${p.name}</div>
+            <div class="rp-price">${p.price}</div>
+            <div class="rp-product-meta">
+              <span class="rp-pill rp-pill--muted">Min ${p.minOrder} ${p.unit.replace(/\s*\(.*?\)/, "")}</span>
+              <span class="rp-pill rp-pill--muted">${p.priceType || "Fixed"}</span>
+            </div>
+            <div class="rp-product-vendor">
+              <div class="rp-icon-text">
+                <i class="fas fa-store rp-icon-inline" aria-hidden="true"></i>
+                <span>${p.vendorName}</span>
+              </div>
+              <div class="rp-icon-text">
+                <i class="fas fa-map-marker-alt rp-icon-inline" aria-hidden="true"></i>
+                <span>${p.vendorCity || "City N/A"}</span>
+              </div>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const p = getProduct();
+      document.querySelector("[data-pdp-name]").textContent = p.name;
+      document.querySelector("[data-pdp-vendor]").textContent = p.vendorName;
+      document.querySelector("[data-pdp-city]").textContent = p.vendorCity || "City N/A";
+      document.querySelector("[data-pdp-image]").src = p.previewImage;
+      document.querySelector("[data-pdp-price]").textContent = p.price;
+      document.querySelector("[data-pdp-price-meta]").textContent =
+        `${p.priceType || "Fixed"} · ${p.taxIncluded ? "Tax included" : "Tax excluded"}`;
+      document.querySelector("[data-pdp-min]").textContent = `Min ${p.minOrder} ${p.unit.replace(/\s*\(.*?\)/, "")}`;
+      document.querySelector("[data-pdp-category]").textContent = p.category;
+      document.querySelector("[data-pdp-lead]").textContent = p.leadTime ? `Lead ${p.leadTime}` : "Lead time N/A";
+      document.querySelector("[data-pdp-tax]").textContent = p.taxIncluded ? "Tax included" : "Tax excluded";
+      document.querySelector("[data-pdp-variant]").textContent = p.variant || "";
+      document.querySelector("[data-pdp-desc]").textContent = p.description || "";
+      document.querySelector("[data-pdp-fulfillment]").textContent =
+        p.leadTime ? `${p.leadTime} · Ships from ${p.vendorCity || "N/A"}` : `Ships from ${p.vendorCity || "N/A"}`;
+
+      const orderBtn = document.getElementById("pdp-order");
+      orderBtn.href = `index.html#tab-marketplace`;
+
+      const orderNudge = document.getElementById("pdp-order-nudge");
+      if (orderNudge) {
+        const baseOrder = (p.minOrder || 1) + (p.vendorName ? p.vendorName.length : 0) + (p.category ? p.category.length : 0);
+        const orderCount = Math.max(4, (baseOrder % 50) + 8);
+        orderNudge.textContent = `${orderCount} properties ordered this recently.`;
+      }
+
+      const wishlistNudge = document.getElementById("pdp-wishlist-nudge");
+      if (wishlistNudge) {
+        const base = (p.minOrder || 1) + (p.vendorCity ? p.vendorCity.length : 0) + (p.category ? p.category.length : 0);
+        const wishCount = Math.max(6, (base % 40) + 5);
+        wishlistNudge.textContent = `Saved by ${wishCount} properties this month.`;
+      }
+
+      const likeBtn = document.getElementById("pdp-wishlist");
+      if (likeBtn) {
+        likeBtn.addEventListener("click", () => {
+          const isLiked = likeBtn.classList.toggle("rp-button--liked");
+          likeBtn.setAttribute("aria-pressed", String(isLiked));
+          likeBtn.textContent = isLiked ? "Liked" : "Like";
+        });
+      }
+
+      const qtyInput = document.getElementById("pdp-qty");
+      const decBtn = document.querySelector("[data-qty-decrease]");
+      const incBtn = document.querySelector("[data-qty-increase]");
+      const clampQty = (val) => Math.max(1, parseInt(val, 10) || 1);
+      if (qtyInput && decBtn && incBtn) {
+        decBtn.addEventListener("click", () => {
+          qtyInput.value = clampQty(Number(qtyInput.value) - 1);
+        });
+        incBtn.addEventListener("click", () => {
+          qtyInput.value = clampQty(Number(qtyInput.value) + 1);
+        });
+        qtyInput.addEventListener("input", () => {
+          qtyInput.value = clampQty(qtyInput.value);
+        });
+      }
+
+      renderRecommendations(p);
+    });
+  </script>
+</body>
+</html>
