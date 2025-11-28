@@ -1,5 +1,6 @@
 // Simple front-end state stored in localStorage
 const STORAGE_KEY = "rp_eprocurement_state_v1";
+const PRODUCTS_BACKUP_KEY = "rp_products_backup";
 
 const VENDOR_WHATSAPP = "6289516428586"; // placeholder
 const VENDOR_EMAIL = "arief.setiawan@reddoorz.com"; // placeholder
@@ -16,6 +17,7 @@ const PRODUCTS = [
     category: "F&B",
     unit: "carton (24)",
     price: "IDR 48.000 - 58.000 / carton",
+    price: "IDR 50.000 / carton",
     priceType: "Fixed",
     taxIncluded: false,
     leadTime: "2-3 days",
@@ -34,6 +36,7 @@ const PRODUCTS = [
     category: "F&B",
     unit: "carton (24)",
     price: "IDR 48.000 - 58.000 / carton",
+    price: "IDR 52.000 / carton",
     priceType: "Fixed",
     taxIncluded: false,
     leadTime: "2-3 days",
@@ -52,6 +55,7 @@ const PRODUCTS = [
     category: "Laundry",
     unit: "kg",
     price: "IDR 7.000 - 10.000 / kg",
+    price: "IDR 9.000 / kg",
     priceType: "Negotiable",
     taxIncluded: false,
     leadTime: "Same/next day",
@@ -70,6 +74,7 @@ const PRODUCTS = [
     category: "Laundry",
     unit: "kg",
     price: "IDR 8.000 - 11.000 / kg",
+    price: "IDR 9.500 / kg",
     priceType: "Negotiable",
     taxIncluded: false,
     leadTime: "Same/next day",
@@ -88,6 +93,7 @@ const PRODUCTS = [
     category: "Laundry",
     unit: "kg",
     price: "IDR 7.000 - 10.000 / kg",
+    price: "IDR 9.000 / kg",
     priceType: "Negotiable",
     taxIncluded: false,
     leadTime: "Same/next day",
@@ -106,6 +112,7 @@ const PRODUCTS = [
     category: "AC/Handyman",
     unit: "visit",
     price: "IDR 150.000 - 250.000 / visit",
+    price: "IDR 200.000 / visit",
     priceType: "Negotiable",
     taxIncluded: false,
     leadTime: "1-2 days",
@@ -124,6 +131,7 @@ const PRODUCTS = [
     category: "AC/Handyman",
     unit: "visit",
     price: "IDR 150.000 - 250.000 / visit",
+    price: "IDR 200.000 / visit",
     priceType: "Negotiable",
     taxIncluded: false,
     leadTime: "1-2 days",
@@ -142,6 +150,7 @@ const PRODUCTS = [
     category: "Wifi",
     unit: "subscription",
     price: "IDR 350.000 - 600.000 / month",
+    price: "IDR 450.000 / month",
     priceType: "Negotiable",
     taxIncluded: false,
     leadTime: "3-5 days",
@@ -160,6 +169,7 @@ const PRODUCTS = [
     category: "Wifi",
     unit: "subscription",
     price: "IDR 350.000 - 600.000 / month",
+    price: "IDR 450.000 / month",
     priceType: "Negotiable",
     taxIncluded: false,
     leadTime: "3-5 days",
@@ -178,6 +188,7 @@ const PRODUCTS = [
     category: "Amenities",
     unit: "pack",
     price: "IDR 5.500 - 7.000 / pack",
+    price: "IDR 6.500 / pack",
     priceType: "Fixed",
     taxIncluded: false,
     leadTime: "3-5 days",
@@ -196,6 +207,7 @@ const PRODUCTS = [
     category: "Amenities",
     unit: "pack",
     price: "IDR 8.000 - 11.000 / pack",
+    price: "IDR 9.500 / pack",
     priceType: "Fixed",
     taxIncluded: false,
     leadTime: "5-7 days",
@@ -214,6 +226,7 @@ const PRODUCTS = [
     category: "Linen",
     unit: "set",
     price: "IDR 45.000 - 55.000 / set",
+    price: "IDR 50.000 / set",
     priceType: "Fixed",
     taxIncluded: false,
     leadTime: "3-5 days",
@@ -232,6 +245,7 @@ const PRODUCTS = [
     category: "Linen",
     unit: "set",
     price: "IDR 185.000 - 215.000 / set",
+    price: "IDR 200.000 / set",
     priceType: "Fixed",
     taxIncluded: false,
     leadTime: "7-10 days",
@@ -247,6 +261,18 @@ let state = {
   addresses: [], // [{ id, label, recipient, phone, city, detail, isDefault }]
   orders: []     // [{ id, createdAt, channel, addressLabel, items, totalQty, status }]
 };
+let editingAddressId = null;
+
+function toggleAddressForm(show) {
+  const formPage = document.getElementById("address-form-page");
+  const listView = document.getElementById("addresses-view");
+  if (!formPage || !listView) return;
+  formPage.hidden = !show;
+  listView.hidden = show;
+  if (show) {
+    formPage.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
 
 // --- Helpers -----------------------------------------------------------------
 
@@ -258,11 +284,11 @@ function loadState() {
       state.addresses = [
         {
           id: generateId(),
-          label: "Front Office",
-          recipient: "Duty Manager",
-          phone: "+62-812-0000-0000",
-          city: "Yogyakarta",
-          detail: "Jl. Malioboro No. 123, Front Office Desk",
+          label: "Main Property - Bandung",
+          recipient: "",
+          phone: "",
+          city: "Bandung",
+          detail: "Jl. Dagopojok No.22, Dago, Kecamatan Coblong, Kota Bandung, Jawa Barat 40135",
           isDefault: true
         }
       ];
@@ -272,6 +298,24 @@ function loadState() {
     const parsed = JSON.parse(raw);
     if (parsed && typeof parsed === "object") {
       state = Object.assign(state, parsed);
+      // Migrate older sample address (Yogyakarta) to Bandung property address
+      if (state.addresses && Array.isArray(state.addresses)) {
+        const legacy = state.addresses.find(
+          (a) =>
+            (a.detail || "").toLowerCase().includes("malioboro") ||
+            (a.city || "").toLowerCase() === "yogyakarta"
+        );
+        if (legacy) {
+          legacy.label = "Main Property - Bandung";
+          legacy.city = "Bandung";
+          legacy.detail =
+            "Jl. Dagopojok No.22, Dago, Kecamatan Coblong, Kota Bandung, Jawa Barat 40135";
+          legacy.recipient = legacy.recipient || "";
+          legacy.phone = legacy.phone || "";
+          legacy.isDefault = true;
+          saveState();
+        }
+      }
     }
   } catch (e) {
     console.warn("Failed to load state", e);
@@ -294,6 +338,24 @@ function formatDateTime(d) {
   const hh = pad(d.getHours());
   const mi = pad(d.getMinutes());
   return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+}
+
+function activateTab(target) {
+  const btn = document.querySelector(
+    `.rp-tab-button[data-tab-target="${target}"]`
+  );
+  const section = document.getElementById("tab-" + target);
+  if (!btn || !section) return;
+
+  document
+    .querySelectorAll(".rp-tab-button")
+    .forEach((b) => b.classList.remove("rp-tab-button--active"));
+  btn.classList.add("rp-tab-button--active");
+
+  document
+    .querySelectorAll(".rp-tab-section")
+    .forEach((sec) => sec.classList.remove("rp-tab-section--active"));
+  section.classList.add("rp-tab-section--active");
 }
 
 function parsePriceMin(priceStr) {
@@ -323,10 +385,10 @@ function closePreviewModal() {
 // --- Rendering ---------------------------------------------------------------
 
 function renderProductTable(products) {
-  const tbody = document.querySelector("#marketplace-table tbody");
+  const grid = document.getElementById("catalog-grid");
   const empty = document.getElementById("marketplace-empty");
   const countLabel = document.querySelector("[data-product-count-label]");
-  tbody.innerHTML = "";
+  grid.innerHTML = "";
 
   if (!products.length) {
     empty.hidden = false;
@@ -338,10 +400,12 @@ function renderProductTable(products) {
   countLabel.textContent = `${products.length} item(s)`;
 
   products.forEach((p) => {
-    const tr = document.createElement("tr");
+    const card = document.createElement("div");
+    card.className = "rp-product-card js-pdp-link";
+    card.setAttribute("data-product-id", p.id);
     const unitLabel = p.unit.replace(/\s*\(.*?\)/, "");
-    tr.innerHTML = `
-      <td>
+    card.innerHTML = `
+      <div class="rp-product-card__media">
         <div class="rp-thumb-wrapper">
           <img
             src="${p.previewImage}"
@@ -353,39 +417,89 @@ function renderProductTable(products) {
             <i class="fas fa-search-plus"></i>
           </div>
         </div>
-      </td>
-      <td>
+        <div class="rp-product-badge">${p.category}</div>
+      </div>
+      <div class="rp-product-card__body">
         <div class="rp-product-name">${p.name}</div>
-      </td>
-      <td>
-        ${p.variant ? `<div class="rp-product-desc">${p.variant}</div>` : ""}
-        <div class="rp-product-desc">${p.description}</div>
-      </td>
-      <td>
-        <div class="rp-product-name">${p.price}</div>
-        <div class="rp-product-desc">
-          ${p.priceType || "Fixed"} &middot; ${p.taxIncluded ? "Tax included" : "Tax excluded"}
+        <div class="rp-price">${p.price}</div>
+        <div class="rp-product-meta">
+          <span class="rp-pill rp-pill--muted">${p.priceType || "Fixed"}</span>
+          <span class="rp-pill rp-pill--muted">${
+            p.taxIncluded ? "Tax included" : "Tax excluded"
+          }</span>
+          <span class="rp-pill rp-pill--muted">Min ${p.minOrder} ${unitLabel}</span>
         </div>
-      </td>
-      <td>${p.minOrder} ${unitLabel}</td>
-      <td>${unitLabel}</td>
-      <td>${p.category}</td>
-      <td>
-        <div class="rp-product-name">${p.vendorName}</div>
-        <div class="rp-product-desc">${p.vendorCity || "City N/A"}</div>
-      </td>
-      <td>
-        <div class="rp-cart-actions">
-          <button class="rp-button rp-button--sm js-add-to-cart"
-                  data-product-id="${p.id}"
-                  data-min-order="${p.minOrder}">
-            Buy
-          </button>
+        <div class="rp-product-vendor">
+          <div class="rp-icon-text">
+            <i class="fas fa-store rp-icon-inline" aria-hidden="true"></i>
+            <span>${p.vendorName}</span>
+          </div>
+          <div class="rp-icon-text">
+            <i class="fas fa-map-marker-alt rp-icon-inline" aria-hidden="true"></i>
+            <span>${p.vendorCity || "City N/A"}</span>
+          </div>
         </div>
-      </td>
+      </div>
     `;
-    tbody.appendChild(tr);
+    grid.appendChild(card);
   });
+
+  // Save a light backup for PDP usage
+  localStorage.setItem(PRODUCTS_BACKUP_KEY, JSON.stringify(PRODUCTS));
+}
+
+function renderVendorSuggestions(currentVendor) {
+  const container = document.getElementById("vendor-suggestions");
+  if (!container) return;
+
+  if (!currentVendor) {
+    container.hidden = true;
+    container.innerHTML = "";
+    return;
+  }
+
+  const suggestions = PRODUCTS.filter(
+    (p) =>
+      p.vendorName === currentVendor &&
+      !state.cart.some((c) => c.productId === p.id)
+  ).slice(0, 3);
+
+  if (!suggestions.length) {
+    container.hidden = true;
+    container.innerHTML = "";
+    return;
+  }
+
+  container.hidden = false;
+  const list = suggestions
+    .map(
+      (s) => {
+        const unitLabel = s.unit.replace(/\s*\(.*?\)/, "");
+        return `
+      <div class="rp-suggestion-item">
+        <div class="rp-suggestion-thumb" data-preview="${s.previewImage}">
+          <img src="${s.previewImage}" alt="${s.name} preview" />
+        </div>
+        <div class="rp-suggestion-meta">
+          <div class="rp-suggestion-name">${s.name}</div>
+          <div class="rp-suggestion-vendor">${s.price} | Min ${s.minOrder} ${unitLabel}</div>
+        </div>
+        <button class="rp-button rp-button--sm js-add-suggestion"
+                data-product-id="${s.id}">
+          Add
+        </button>
+      </div>
+    `;
+      }
+    )
+    .join("");
+
+  container.innerHTML = `
+    <div class="rp-suggestions-title">More from this vendor you might also need</div>
+    <div class="rp-suggestion-list">
+      ${list}
+    </div>
+  `;
 }
 
 function renderCart() {
@@ -414,8 +528,27 @@ function renderCart() {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>
-          <div class="rp-product-name">${p.name}</div>
-          <div class="rp-product-desc">${p.category}</div>
+          <div class="rp-thumb-inline">
+            <div class="rp-thumb-wrapper">
+              <img
+                src="${p.previewImage}"
+                alt="${p.name} preview"
+                class="rp-thumb js-preview"
+                data-preview="${p.previewImage}"
+              />
+              <div class="rp-thumb-hint" title="Preview full size">
+                <i class="fas fa-search-plus"></i>
+              </div>
+            </div>
+            <div>
+              <div class="rp-product-name">${p.name}</div>
+              <div class="rp-product-desc">${p.category}</div>
+            </div>
+          </div>
+        </td>
+        <td>
+          ${p.variant ? `<div class="rp-product-desc">${p.variant}</div>` : ""}
+          <div class="rp-product-desc">${p.description}</div>
         </td>
         <td>
           <input type="number"
@@ -450,12 +583,23 @@ function renderCart() {
   const cartCount = cart.reduce((sum, line) => sum + line.qty, 0);
   const cartBadge = document.querySelector("[data-cart-count]");
   cartBadge.textContent = String(cartCount);
+
+  const vendor =
+    state.cart.length && PRODUCTS.find((p) => p.id === state.cart[0].productId)
+      ? PRODUCTS.find((p) => p.id === state.cart[0].productId).vendorName
+      : null;
+  renderVendorSuggestions(vendor);
+  const suggestionsBox = document.getElementById("vendor-suggestions");
+  if (suggestionsBox && !suggestionsBox.innerHTML.trim()) {
+    suggestionsBox.hidden = true;
+  }
 }
 
 function renderAddresses() {
   const tableBody = document.querySelector("#addresses-table tbody");
   const empty = document.getElementById("addresses-empty");
   const select = document.getElementById("delivery-address-select");
+  const preview = document.querySelector("[data-address-preview]");
 
   tableBody.innerHTML = "";
   select.innerHTML = "";
@@ -466,6 +610,9 @@ function renderAddresses() {
     opt.value = "";
     opt.textContent = "No address saved - please create one in Profile tab.";
     select.appendChild(opt);
+    if (preview) {
+      preview.textContent = "No address selected.";
+    }
     return;
   }
 
@@ -489,9 +636,17 @@ function renderAddresses() {
                  name="default-address"
                  class="js-default-address-radio"
                  data-id="${addr.id}"
-                 ${addr.isDefault ? "checked" : ""} />
-          <span>Default</span>
+                 ${addr.isDefault ? "checked disabled" : ""} />
+          <span>${addr.isDefault ? "Main address" : "Set as main address"}</span>
         </label>
+      </td>
+      <td class="rp-table-actions">
+        <button class="rp-link-button js-edit-address" data-id="${addr.id}">
+          Edit
+        </button>
+        <button class="rp-link-button js-remove-address" data-id="${addr.id}">
+          Remove
+        </button>
       </td>
     `;
     tableBody.appendChild(tr);
@@ -499,7 +654,16 @@ function renderAddresses() {
     // select options
     const opt = document.createElement("option");
     opt.value = addr.id;
-    opt.textContent = `${addr.label} - ${addr.city || "No city"}`;
+    const citySuffix =
+      addr.city &&
+      !addr.label.toLowerCase().includes(addr.city.toLowerCase())
+        ? ` - ${addr.city}`
+        : "";
+    opt.textContent = `${addr.label}${citySuffix || ""}`;
+    opt.title = addr.detail || "";
+    opt.dataset.detail = addr.detail || "";
+    opt.dataset.recipient = addr.recipient || "";
+    opt.dataset.phone = addr.phone || "";
     if (addr.isDefault) {
       opt.selected = true;
     }
@@ -512,6 +676,8 @@ function renderAddresses() {
     saveState();
     renderAddresses();
   }
+
+  updateAddressPreview(select.value);
 }
 
 function renderOrders() {
@@ -594,6 +760,28 @@ function applyFilters() {
   renderProductTable(filtered);
 }
 
+function updateAddressPreview(selectedId) {
+  const preview = document.querySelector("[data-address-preview]");
+  const select = document.getElementById("delivery-address-select");
+  if (!preview || !select) return;
+
+  const option = select.querySelector(`option[value="${selectedId}"]`);
+  const detail = option?.dataset.detail || "";
+  const recipient = option?.dataset.recipient || "";
+  const phone = option?.dataset.phone || "";
+
+  if (!detail) {
+    preview.textContent = "No address selected.";
+    return;
+  }
+
+  const lines = [detail];
+  const meta = [recipient, phone].filter(Boolean).join(" · ");
+  if (meta) lines.push(meta);
+
+  preview.innerHTML = lines.join("<br>");
+}
+
 function populateCityFilter() {
   const select = document.getElementById("filter-city");
   if (!select) return;
@@ -618,6 +806,11 @@ function populateCityFilter() {
       .join(" ");
     select.appendChild(opt);
   });
+
+  const defaultCity = "bandung";
+  if (uniqueCities.includes(defaultCity)) {
+    select.value = defaultCity;
+  }
 }
 
 // --- Cart manipulation -------------------------------------------------------
@@ -654,6 +847,13 @@ function setDefaultAddress(id) {
   state.addresses.forEach((a) => {
     a.isDefault = a.id === id;
   });
+}
+
+function removeAddress(id) {
+  state.addresses = state.addresses.filter((a) => a.id !== id);
+  if (state.addresses.length && !state.addresses.some((a) => a.isDefault)) {
+    state.addresses[0].isDefault = true;
+  }
 }
 
 // --- Orders / send channel ---------------------------------------------------
@@ -768,27 +968,43 @@ function bindEvents() {
     applyFilters();
   });
 
-  // Marketplace: add to cart (event delegation)
+  // Catalog: add to cart (event delegation)
   document
-    .getElementById("marketplace-table")
+    .getElementById("catalog-grid")
     .addEventListener("click", (evt) => {
-      const btn = evt.target.closest(".js-add-to-cart");
-      if (!btn) {
-        const preview = evt.target.closest(".js-preview");
-        if (preview) {
-          evt.preventDefault();
-          const src = preview.getAttribute("data-preview");
-          openPreviewModal(src);
-        }
+      const card = evt.target.closest(".js-pdp-link");
+      if (!card) return;
+      const productId = card.getAttribute("data-product-id");
+      if (!productId) return;
+      window.location.href = `pdp.html?id=${encodeURIComponent(productId)}`;
+    });
+
+  document
+    .getElementById("vendor-suggestions")
+    .addEventListener("click", (evt) => {
+      const thumb = evt.target.closest(".rp-suggestion-thumb");
+      if (thumb) {
+        const src = thumb.getAttribute("data-preview");
+        if (src) openPreviewModal(src);
         return;
       }
 
+      const btn = evt.target.closest(".js-add-suggestion");
+      if (!btn) return;
       const productId = btn.getAttribute("data-product-id");
       const product = PRODUCTS.find((p) => p.id === productId);
-      const qty = product ? product.minOrder : 1;
-      upsertCartItem(productId, qty);
+      if (!product) return;
+
+      const cartVendor =
+        state.cart.length &&
+        PRODUCTS.find((p) => p.id === state.cart[0].productId)?.vendorName;
+      if (cartVendor && cartVendor !== product.vendorName) {
+        state.cart = [];
+      }
+      upsertCartItem(productId, product.minOrder || 1);
       saveState();
       renderCart();
+      activateTab("checkout");
     });
 
   // Checkout: quantity & note change + remove
@@ -811,6 +1027,13 @@ function bindEvents() {
   document
     .getElementById("checkout-table")
     .addEventListener("click", (evt) => {
+      const preview = evt.target.closest(".js-preview");
+      if (preview) {
+        evt.preventDefault();
+        const src = preview.getAttribute("data-preview");
+        openPreviewModal(src);
+        return;
+      }
       const btn = evt.target.closest(".js-remove-from-cart");
       if (!btn) return;
       const productId = btn.getAttribute("data-product-id");
@@ -829,8 +1052,71 @@ function bindEvents() {
       saveState();
       renderAddresses();
     });
+  document
+    .getElementById("addresses-table")
+    .addEventListener("click", (evt) => {
+      const btn = evt.target.closest(".js-remove-address");
+      if (btn) {
+        const id = btn.getAttribute("data-id");
+        if (
+          !confirm(
+            "Remove this address? You can add it again later from the form."
+          )
+        ) {
+          return;
+        }
+        removeAddress(id);
+        saveState();
+        renderAddresses();
+        return;
+      }
 
-  // Address form
+      const editBtn = evt.target.closest(".js-edit-address");
+      if (editBtn) {
+        const id = editBtn.getAttribute("data-id");
+        const addr = state.addresses.find((a) => a.id === id);
+        if (!addr) return;
+        editingAddressId = id;
+        document.getElementById("address-form-title").textContent =
+          "Edit Delivery Address";
+        document.getElementById("addr-label").value = addr.label || "";
+        document.getElementById("addr-recipient").value = addr.recipient || "";
+        document.getElementById("addr-phone").value = addr.phone || "";
+        document.getElementById("addr-city").value = addr.city || "";
+        document.getElementById("addr-detail").value = addr.detail || "";
+        document.getElementById("addr-default").checked = !!addr.isDefault;
+        toggleAddressForm(true);
+      }
+    });
+
+  document
+    .getElementById("delivery-address-select")
+    .addEventListener("change", (evt) =>
+      updateAddressPreview(evt.target.value)
+    );
+
+  document
+    .getElementById("add-address-btn")
+    .addEventListener("click", () => {
+      editingAddressId = null;
+      document.getElementById("address-form-title").textContent =
+        "Add Delivery Address";
+      document.getElementById("address-form").reset();
+      document.getElementById("addr-default").checked = false;
+      toggleAddressForm(true);
+    });
+
+  document
+    .getElementById("address-form-cancel")
+    .addEventListener("click", () => {
+      editingAddressId = null;
+      document.getElementById("address-form").reset();
+      toggleAddressForm(false);
+      document.getElementById("address-form-title").textContent =
+        "Add Delivery Address";
+    });
+
+  // Address form (inline)
   document.getElementById("address-form").addEventListener("submit", (evt) => {
     evt.preventDefault();
     const label = document.getElementById("addr-label").value.trim();
@@ -845,22 +1131,40 @@ function bindEvents() {
       return;
     }
 
-    const addr = {
-      id: generateId(),
-      label,
-      recipient,
-      phone,
-      city,
-      detail,
-      isDefault: false
-    };
+    if (editingAddressId) {
+      const addr = state.addresses.find((a) => a.id === editingAddressId);
+      if (addr) {
+        addr.label = label;
+        addr.recipient = recipient;
+        addr.phone = phone;
+        addr.city = city;
+        addr.detail = detail;
+        if (makeDefault) {
+          setDefaultAddress(addr.id);
+        }
+      }
+    } else {
+      const addr = {
+        id: generateId(),
+        label,
+        recipient,
+        phone,
+        city,
+        detail,
+        isDefault: false
+      };
 
-    state.addresses.push(addr);
-    if (makeDefault || state.addresses.length === 1) {
-      setDefaultAddress(addr.id);
+      state.addresses.push(addr);
+      if (makeDefault || state.addresses.length === 1) {
+        setDefaultAddress(addr.id);
+      }
     }
 
+    editingAddressId = null;
     document.getElementById("address-form").reset();
+    toggleAddressForm(false);
+    document.getElementById("address-form-title").textContent =
+      "Add Delivery Address";
     saveState();
     renderAddresses();
   });
@@ -888,7 +1192,7 @@ function bindEvents() {
 
 function handleSend(channel) {
   if (!state.cart.length) {
-    alert("Your cart is empty. Please add items from the Marketplace tab.");
+    alert("Your cart is empty. Please add items from the Catalog tab.");
     return;
   }
 
@@ -944,4 +1248,8 @@ document.addEventListener("DOMContentLoaded", () => {
   renderOrders();
   bindEvents();
   applyFilters(); // to set count label correctly
+  const select = document.getElementById("delivery-address-select");
+  if (select) {
+    updateAddressPreview(select.value || (state.addresses[0] && state.addresses[0].id));
+  }
 });
